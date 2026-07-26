@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>GlassKanban</title>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-box">
+                <div class="logo-icon">GK</div>
+                <h1 class="logo-text">GlassKanban</h1>
+            </div>
+
+            <div class="controls">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Axtar...">
+                </div>
+
+                <select id="priorityFilter" class="filter-select">
+                    <option value="all">Bütün Prioritetlər</option>
+                    <option value="high">Yüksək Prioritet</option>
+                    <option value="medium">Orta Prioritet</option>
+                    <option value="low">Aşağı Prioritet</option>
+                </select>
+
+                <button class="btn" id="openModalBtn">
+                    <i class="fa-solid fa-plus"></i> Yeni Tapşırıq
+                </button>
+            </div>
+        </header>
+
+        <main class="board">
+            <section class="column" data-status="todo">
+                <div class="column-header">
+                    <div class="column-title">
+                        <i class="fa-solid fa-circle-notch"></i>
+                        <h2>Gözləmədə</h2>
+                    </div>
+                    <span class="count" id="count-todo">0</span>
+                </div>
+                <div class="cards" id="todo-cards"></div>
+            </section>
+
+            <section class="column" data-status="progress">
+                <div class="column-header">
+                    <div class="column-title">
+                        <i class="fa-solid fa-spinner"></i>
+                        <h2>İcra olunur</h2>
+                    </div>
+                    <span class="count" id="count-progress">0</span>
+                </div>
+                <div class="cards" id="progress-cards"></div>
+            </section>
+
+            <section class="column" data-status="done">
+                <div class="column-header">
+                    <div class="column-title">
+                        <i class="fa-regular fa-circle-check"></i>
+                        <h2>Tamamlandı</h2>
+                    </div>
+                    <span class="count" id="count-done">0</span>
+                </div>
+                <div class="cards" id="done-cards"></div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal" id="modalOverlay">
+        <div class="modal-box">
+            <h2 class="modal-title" id="modalHeading">Yeni Tapşırıq</h2>
+            
+            <form id="taskForm">
+                <input type="hidden" id="taskId">
+
+                <div class="field">
+                    <label>Başlıq</label>
+                    <input type="text" id="taskTitle" class="input" placeholder="Məs: Kurs tapşırığı" required>
+                </div>
+
+                <div class="field">
+                    <label>Açıqlama</label>
+                    <textarea id="taskDesc" class="input" placeholder="Qısa qeyd..."></textarea>
+                </div>
+
+                <div class="field">
+                    <label>Status</label>
+                    <select id="taskStatus" class="input">
+                        <option value="todo">Gözləmədə</option>
+                        <option value="progress">İcra olunur</option>
+                        <option value="done">Tamamlandı</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Prioritet</label>
+                    <select id="taskPriority" class="input">
+                        <option value="low">Aşağı Dərəcə</option>
+                        <option value="medium">Orta Dərəcə</option>
+                        <option value="high">Yüksək Dərəcə</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="closeModalBtn">Ləğv et</button>
+                    <button type="submit" class="btn">Yadda saxla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="interactivity.js"></script>
+</body>
+</html>
