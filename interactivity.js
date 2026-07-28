@@ -1,16 +1,16 @@
-let tasks=[
+let tasks = [
     {
         id: 1,
         title: "Next.js dərs 23",
-        desc: "dərs 30-a kimi bax",
+        desc: "Dərs 30-a kimi bax",
         status: "todo",
         priority: "high",
         createdAt: "27 İyul 2026, 13:19"
     },
     {
         id: 2,
-        title: "DevJoint Task2 ",
-        desc: "part 1 checkpoint göndər.",
+        title: "DevJoint Task2",
+        desc: "Part 1 checkpoint göndər.",
         status: "done",
         priority: "medium",
         createdAt: "27 İyul 2026, 14:00"
@@ -18,24 +18,44 @@ let tasks=[
     {
         id: 3,
         title: "İspan dili",
-        desc: "level A1 bitir",
+        desc: "Level A1 bitir",
         status: "progress",
         priority: "low",
         createdAt: "28 İyul 2026, 14:00"
     }
 ]
 
-function renderTasks() {
-    const todoCards=document.getElementById('todo-cards')
-    const progressCards=document.getElementById('progress-cards')
-    const doneCards=document.getElementById('done-cards')
+const todoCards = document.getElementById('todo-cards')
+const progressCards = document.getElementById('progress-cards')
+const doneCards = document.getElementById('done-cards')
 
-    if (todoCards) todoCards.innerHTML=''
-    if (progressCards) progressCards.innerHTML=''
-    if (doneCards) doneCards.innerHTML=''
+const countTodo = document.getElementById('count-todo')
+const countProgress = document.getElementById('count-progress')
+const countDone = document.getElementById('count-done')
+
+const modalOverlay = document.getElementById('modalOverlay')
+const modalHeading = document.getElementById('modalHeading')
+const openModalBtn = document.getElementById('openModalBtn')
+const closeModalBtn = document.getElementById('closeModalBtn')
+const taskForm = document.getElementById('taskForm')
+
+const taskIdInput = document.getElementById('taskId')
+const taskTitleInput = document.getElementById('taskTitle')
+const taskDescInput = document.getElementById('taskDesc')
+const taskStatusInput = document.getElementById('taskStatus')
+const taskPriorityInput = document.getElementById('taskPriority')
+
+function renderTasks() {
+    if (todoCards) todoCards.innerHTML = '';
+    if (progressCards) progressCards.innerHTML = '';
+    if (doneCards) doneCards.innerHTML = '';
+
+    let todoCount = 0;
+    let progressCount = 0;
+    let doneCount = 0;
 
     tasks.forEach(task => {
-        const priorityText = task.priority === 'low' ? 'AŞAĞI' : task.priority === 'medium' ? 'ORTA' : 'YÜKSƏK'
+        const priorityText = task.priority === 'low' ? 'Aşağı' : task.priority === 'medium' ? 'Orta' : 'Yüksək';
         const cardHTML = `
             <article class="card card-${task.priority}" draggable="true" data-id="${task.id}">
                 <span class="badge">${priorityText}</span>
@@ -46,18 +66,104 @@ function renderTasks() {
                         <i class="fa-regular fa-calendar-days"></i> ${task.createdAt || ''}
                     </span>
                     <div class="card-actions">
-                        <button class="icon-btn" onclick="editTask(${task.id})" title="Düzəliş et"><i class="fa-solid fa-pen"></i></button>
-                        <button class="icon-btn" onclick="deleteTask(${task.id})" title="Sil"><i class="fa-regular fa-trash-can"></i></button>
+                        <button class="icon-btn" onclick="editTask(${task.id})" title="Düzəliş et">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="icon-btn" onclick="deleteTask(${task.id})" title="Sil">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
                     </div>
                 </div>
             </article>
-        `;
-        if (task.status==='todo' && todoCards) todoCards.innerHTML+=cardHTML;
-        else if (task.status==='progress' && progressCards) progressCards.innerHTML+=cardHTML;
-        else if (task.status==='done' && doneCards) doneCards.innerHTML+=cardHTML;
+        `
+        if (task.status === 'todo' && todoCards) {
+            todoCards.innerHTML += cardHTML;
+            todoCount++;
+        } 
+        else if (task.status === 'progress' && progressCards) {
+            progressCards.innerHTML += cardHTML;
+            progressCount++;
+        } 
+        else if (task.status === 'done' && doneCards) {
+            doneCards.innerHTML += cardHTML;
+            doneCount++;
+        }
+    })
+    if (countTodo) countTodo.textContent = todoCount;
+    if (countProgress) countProgress.textContent = progressCount;
+    if (countDone) countDone.textContent = doneCount;
+    [{ container: todoCards, count: todoCount },
+     { container: progressCards, count: progressCount },
+     { container: doneCards, count: doneCount }
+    ].forEach(item => {
+        if (item.container && item.count === 0) item.container.innerHTML = '<div class="empty">Boşdur</div>'
+    })
+}
+function deleteTask(id) {
+    tasks = tasks.filter(task => task.id !== id);
+    renderTasks();
+}
+
+let editingTaskId = null; // yeni tapşırıq yaradırıq ya mövcud olani reaktə edirik?
+function editTask(id) {
+    const taskToEdit = tasks.find(task => task.id === id);
+    if (!taskToEdit) return;
+    editingTaskId = id
+    if (modalHeading) modalHeading.textContent = "Tapşırığa Düzəliş Et"
+
+    taskIdInput.value = taskToEdit.id;
+    taskTitleInput.value = taskToEdit.title;
+    taskDescInput.value = taskToEdit.desc || '';
+    taskStatusInput.value = taskToEdit.status;
+    taskPriorityInput.value = taskToEdit.priority;
+    modalOverlay.classList.add('active')
+}
+function closeModal() {
+    if (modalOverlay) modalOverlay.classList.remove('active');
+    if (taskForm) taskForm.reset();
+    editingTaskId = null;
+}
+if (openModalBtn) {
+    openModalBtn.addEventListener('click', () => {
+        editingTaskId = null;
+        if (modalHeading) modalHeading.textContent = "Yeni Tapşırıq";
+        if (taskForm) taskForm.reset();
+        modalOverlay.classList.add('active');
     });
-    [todoCards, progressCards, doneCards].forEach(container => {
-        if (container.children.length===0) container.innerHTML='<div class="empty">Boşdur</div>'
+}
+if (closeModalBtn) {closeModalBtn.addEventListener('click', closeModal)}
+if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {if (e.target===modalOverlay) closeModal()})
+}
+// ********************************************* Tarix-saat formatlanması ******************************************
+function FormatDate() {
+    const monthsAz = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "İyun", "İyul", "Avqust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"]
+    const now = new Date()
+    return `${now.getDate()} ${monthsAz[now.getMonth()]} ${now.getFullYear()}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+}
+// ******************************************************************************************************************
+
+if (taskForm) {
+    taskForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const title=taskTitleInput.value.trim();
+        const desc=taskDescInput.value.trim();
+        const status=taskStatusInput.value;
+        const priority=taskPriorityInput.value;
+        if (!title) return;
+        if (editingTaskId !== null) {
+            tasks = tasks.map(task => {
+                if (task.id===editingTaskId) {
+                    return { ...task,title, desc,status,priority}
+                } return task
+            });
+        } else {
+            const newId=tasks.length>0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1; // yeni yeni növbəti id yaratmaq üçün massivin içindəki ən böyük id tapıb üzərinə 1 əlavə edirəm
+            tasks.push({id:newId,title,desc,status,priority,createdAt:FormatDate()})
+        }
+        renderTasks()
+        closeModal()
     })
 }
 renderTasks();
