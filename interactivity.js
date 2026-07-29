@@ -98,6 +98,7 @@ function renderTasks() {
     ].forEach(item => {
         if (item.container && item.count === 0) item.container.innerHTML = '<div class="empty">Boşdur</div>'
     })
+    dragAndDrop()
 }
 function deleteTask(id) {
     tasks = tasks.filter(task => task.id !== id);
@@ -164,6 +165,43 @@ if (taskForm) {
         }
         renderTasks()
         closeModal()
+    })
+}
+function dragAndDrop() {
+    const cards = document.querySelectorAll('.card');
+    const columns = document.querySelectorAll('.column');
+    cards.forEach(card => {
+        card.addEventListener('dragstart', (e) => {
+            card.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', card.dataset.id);
+        });
+        card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+            columns.forEach(col => col.classList.remove('drag-over'));
+        });
+    });
+    columns.forEach(column => {
+        column.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            column.classList.add('drag-over');
+        });
+        column.addEventListener('dragleave', () => { column.classList.remove('drag-over')})
+
+        column.addEventListener('drop', (e) => {
+            e.preventDefault();
+            column.classList.remove('drag-over');
+
+            const taskId = Number(e.dataTransfer.getData('text/plain'))
+            const targetStatus = column.dataset.status
+
+            if (taskId && targetStatus) {
+                const task = tasks.find(t => t.id === taskId)
+                if (task && task.status !== targetStatus) {
+                    task.status = targetStatus
+                    renderTasks()
+                }
+            }
+        })
     })
 }
 renderTasks();
