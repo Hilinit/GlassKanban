@@ -1,4 +1,4 @@
-let tasks = [
+let tasks = JSON.parse(localStorage.getItem('kanban-tasks')) || [
     {
         id: 1,
         title: "Next.js dərs 23",
@@ -24,6 +24,7 @@ let tasks = [
         createdAt: "28 İyul 2026, 14:00"
     }
 ]
+function saveTasksToLocalStorage() { localStorage.setItem('kanban-tasks', JSON.stringify(tasks)) }
 
 const todoCards = document.getElementById('todo-cards')
 const progressCards = document.getElementById('progress-cards')
@@ -45,16 +46,21 @@ const taskDescInput = document.getElementById('taskDesc')
 const taskStatusInput = document.getElementById('taskStatus')
 const taskPriorityInput = document.getElementById('taskPriority')
 
+
 function renderTasks() {
-    if (todoCards) todoCards.innerHTML = '';
-    if (progressCards) progressCards.innerHTML = '';
-    if (doneCards) doneCards.innerHTML = '';
+    todoCards.innerHTML = '';
+    progressCards.innerHTML = '';
+    doneCards.innerHTML = '';
 
     let todoCount = 0;
     let progressCount = 0;
     let doneCount = 0;
 
-    tasks.forEach(task => {
+    
+
+  
+
+   tasks.forEach(task => {
         const priorityText = task.priority === 'low' ? 'Aşağı' : task.priority === 'medium' ? 'Orta' : 'Yüksək';
         const cardHTML = `
             <article class="card card-${task.priority}" draggable="true" data-id="${task.id}">
@@ -89,9 +95,9 @@ function renderTasks() {
             doneCount++;
         }
     })
-    if (countTodo) countTodo.textContent = todoCount;
-    if (countProgress) countProgress.textContent = progressCount;
-    if (countDone) countDone.textContent = doneCount;
+    countTodo.textContent = todoCount;
+    countProgress.textContent = progressCount;
+    countDone.textContent = doneCount;
     [{ container: todoCards, count: todoCount },
      { container: progressCards, count: progressCount },
      { container: doneCards, count: doneCount }
@@ -102,6 +108,7 @@ function renderTasks() {
 }
 function deleteTask(id) {
     tasks = tasks.filter(task => task.id !== id);
+    saveTasksToLocalStorage();
     renderTasks();
 }
 
@@ -110,7 +117,7 @@ function editTask(id) {
     const taskToEdit = tasks.find(task => task.id === id);
     if (!taskToEdit) return;
     editingTaskId = id
-    if (modalHeading) modalHeading.textContent = "Tapşırığa Düzəliş Et"
+    modalHeading.textContent = "Tapşırığa Düzəliş Et"
 
     taskIdInput.value = taskToEdit.id;
     taskTitleInput.value = taskToEdit.title;
@@ -120,22 +127,20 @@ function editTask(id) {
     modalOverlay.classList.add('active')
 }
 function closeModal() {
-    if (modalOverlay) modalOverlay.classList.remove('active');
-    if (taskForm) taskForm.reset();
+    modalOverlay.classList.remove('active');
+    taskForm.reset();
     editingTaskId = null;
 }
-if (openModalBtn) {
-    openModalBtn.addEventListener('click', () => {
-        editingTaskId = null;
-        if (modalHeading) modalHeading.textContent = "Yeni Tapşırıq";
-        if (taskForm) taskForm.reset();
-        modalOverlay.classList.add('active');
+openModalBtn.addEventListener('click', () => {
+    editingTaskId = null;
+    modalHeading.textContent = "Yeni Tapşırıq";
+    taskForm.reset();
+    modalOverlay.classList.add('active');
     });
-}
-if (closeModalBtn) {closeModalBtn.addEventListener('click', closeModal)}
-if (modalOverlay) {
-    modalOverlay.addEventListener('click', (e) => {if (e.target===modalOverlay) closeModal()})
-}
+
+closeModalBtn.addEventListener('click', closeModal)
+modalOverlay.addEventListener('click', (e) => {if (e.target===modalOverlay) closeModal()})
+
 // ********************************************* Tarix-saat formatlanması ******************************************
 function FormatDate() {
     const monthsAz = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "İyun", "İyul", "Avqust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"]
@@ -144,29 +149,28 @@ function FormatDate() {
 }
 // ******************************************************************************************************************
 
-if (taskForm) {
-    taskForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+taskForm.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-        const title=taskTitleInput.value.trim();
-        const desc=taskDescInput.value.trim();
-        const status=taskStatusInput.value;
-        const priority=taskPriorityInput.value;
-        if (!title) return;
-        if (editingTaskId !== null) {
-            tasks = tasks.map(task => {
-                if (task.id===editingTaskId) {
-                    return { ...task,title, desc,status,priority}
-                } return task
-            });
-        } else {
-            const newId=tasks.length>0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1; // yeni yeni növbəti id yaratmaq üçün massivin içindəki ən böyük id tapıb üzərinə 1 əlavə edirəm
-            tasks.push({id:newId,title,desc,status,priority,createdAt:FormatDate()})
-        }
-        renderTasks()
-        closeModal()
+    const title=taskTitleInput.value.trim();
+    const desc=taskDescInput.value.trim();
+    const status=taskStatusInput.value;
+    const priority=taskPriorityInput.value;
+    if (!title) return;
+    if (editingTaskId !== null) {
+        tasks = tasks.map(task => {
+            if (task.id===editingTaskId) {
+                return { ...task,title, desc,status,priority}
+            } return task
+        });
+    } else {
+        const newId=tasks.length>0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1; // yeni yeni növbəti id yaratmaq üçün massivin içindəki ən böyük id tapıb üzərinə 1 əlavə edirəm
+        tasks.push({id:newId,title,desc,status,priority,createdAt:FormatDate()})
+    }
+    saveTasksToLocalStorage()
+    renderTasks()
+    closeModal()
     })
-}
 function dragAndDrop() {
     const cards = document.querySelectorAll('.card');
     const columns = document.querySelectorAll('.column');
@@ -198,6 +202,7 @@ function dragAndDrop() {
                 const task = tasks.find(t => t.id === taskId)
                 if (task && task.status !== targetStatus) {
                     task.status = targetStatus
+                    saveTasksToLocalStorage()
                     renderTasks()
                 }
             }
