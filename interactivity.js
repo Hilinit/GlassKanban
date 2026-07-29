@@ -46,7 +46,8 @@ const taskDescInput = document.getElementById('taskDesc')
 const taskStatusInput = document.getElementById('taskStatus')
 const taskPriorityInput = document.getElementById('taskPriority')
 
-
+const searchInput = document.getElementById('searchInput')
+const priorityFilter = document.getElementById('priorityFilter')
 function renderTasks() {
     todoCards.innerHTML = '';
     progressCards.innerHTML = '';
@@ -56,11 +57,16 @@ function renderTasks() {
     let progressCount = 0;
     let doneCount = 0;
 
-    
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const selectedPriority = priorityFilter ? priorityFilter.value : 'all';
 
-  
+    const filteredTasks = tasks.filter(task => {
+        const Search = task.title.toLowerCase().includes(query) || (task.desc && task.desc.toLowerCase().includes(query));
+        const Priority = selectedPriority === 'all' || task.priority === selectedPriority;
+        return Search && Priority;
+    });
 
-   tasks.forEach(task => {
+   filteredTasks.forEach(task => {
         const priorityText = task.priority === 'low' ? 'Aşağı' : task.priority === 'medium' ? 'Orta' : 'Yüksək';
         const cardHTML = `
             <article class="card card-${task.priority}" draggable="true" data-id="${task.id}">
@@ -106,6 +112,10 @@ function renderTasks() {
     })
     dragAndDrop()
 }
+
+searchInput.addEventListener('input', renderTasks);
+priorityFilter.addEventListener('change', renderTasks);
+
 function deleteTask(id) {
     tasks = tasks.filter(task => task.id !== id);
     saveTasksToLocalStorage();
