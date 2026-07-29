@@ -116,8 +116,10 @@ body {
     border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    min-height: 500px;
     transition: background 0.2s ease;
+    min-height: 500px;
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
 }
 .column.drag-over {
     border: 2px dashed #6366f1;
