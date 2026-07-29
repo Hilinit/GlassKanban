@@ -26,6 +26,16 @@ let tasks = JSON.parse(localStorage.getItem('kanban-tasks')) || [
 ]
 function saveTasksToLocalStorage() { localStorage.setItem('kanban-tasks', JSON.stringify(tasks)) }
 
+//******************************************************************************************************************** 
+function protectHTML(text) {
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;")
+}
+//********************************************************************************************************************* 
 const todoCards = document.getElementById('todo-cards')
 const progressCards = document.getElementById('progress-cards')
 const doneCards = document.getElementById('done-cards')
@@ -68,11 +78,13 @@ function renderTasks() {
 
    filteredTasks.forEach(task => {
         const priorityText = task.priority === 'low' ? 'Aşağı' : task.priority === 'medium' ? 'Orta' : 'Yüksək';
+        const safeTitle = protectHTML(task.title);
+        const safeDesc = protectHTML(task.desc || "");
         const cardHTML = `
             <article class="card card-${task.priority}" draggable="true" data-id="${task.id}">
                 <span class="badge">${priorityText}</span>
-                <h3 class="card-title">${task.title}</h3>
-                ${task.desc ? `<p class="card-desc">${task.desc}</p>` : ''}
+                <h3 class="card-title">${safeTitle}</h3>
+                ${safeDesc ? `<p class="card-desc">${safeDesc}</p>` : ''}
                 <div class="card-footer">
                     <span class="card-date">
                         <i class="fa-regular fa-calendar-days"></i> ${task.createdAt || ''}
@@ -139,7 +151,7 @@ function editTask(id) {
 function closeModal() {
     modalOverlay.classList.remove('active');
     taskForm.reset();
-    editingTaskId = null;
+    editingTaskId = null
 }
 openModalBtn.addEventListener('click', () => {
     editingTaskId = null;
@@ -166,6 +178,16 @@ taskForm.addEventListener('submit', (e) => {
     const desc=taskDescInput.value.trim();
     const status=taskStatusInput.value;
     const priority=taskPriorityInput.value;
+
+    const exists = tasks.some(task =>
+        task.id !== editingTaskId &&
+        task.title.toLowerCase() === title.toLowerCase()
+    )
+    if (exists) {
+        alert("Bu başlıqda tapşırıq artıq mövcuddur.")
+        return
+    }
+
     if (!title) return;
     if (editingTaskId !== null) {
         tasks = tasks.map(task => {
